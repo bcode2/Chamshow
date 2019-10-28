@@ -1,0 +1,216 @@
+<div class="container-fluid">
+
+  <div class="row">
+    <agm-map #gm
+      [latitude]="cameraLatitude"
+      [longitude]="cameraLongitude"
+      [usePanning]="true"
+      [zoom]="zoom"
+      [zoomControl]="false">
+
+      <agm-marker
+        *ngFor="let cliente of clientes"
+        [latitude]="cliente.latitud"
+        [longitude]="cliente.longitud"
+        [iconUrl]="cliente.icon"
+        [markerDraggable]="draggable"
+        (markerClick)="onClickMarker(infoWindow, cliente)"
+        (dragEnd)="onMarkerDragEnd(cliente, $event)">
+
+        <agm-info-window #infoWindow [isOpen]="cliente.ingresado">
+          <span><b>{{cliente.razon_social}}</b><br></span>
+          <span>Codigo: {{cliente.codigo}}<br></span>
+          <span>Ruta: {{cliente.ruta}}<br></span>
+          <span>Dir: {{cliente.direccion}}</span>
+
+          <div *ngIf="clientesSolapadosView.length > 0">
+              <div *ngFor="let solapado of clientesSolapadosView">
+                <hr>
+                <span><b>{{solapado.razon_social}}</b><br></span>
+                <span>Codigo: {{solapado.codigo}}<br></span>
+                <span>Ruta: {{solapado.ruta}}<br></span>
+                <span>Dir: {{solapado.direccion}}</span>
+              </div>
+          </div>
+        </agm-info-window>
+
+      </agm-marker>
+
+      <agm-marker-cluster [imagePath]="'./assets/m'">
+        <div *ngFor="let cli of clientesCluster">
+          <agm-marker
+            [latitude]="cli.latitud"
+            [longitude]="cli.longitud">
+          </agm-marker>
+        </div>
+      </agm-marker-cluster>
+
+    </agm-map>
+  </div>
+
+  <div class="row" id="toolboxGroup">
+
+
+    <div class="col-8 non-clickable">
+      <div class="row">
+
+        <!-- Búsqueda de Clientes -->
+        <div class="shadow card bg-light clickable mt-4 ml-3" style="max-width: 15rem;">
+          <div class="card-header"><b>Búsqueda de Cliente</b></div>
+          <div class="card-body">
+            <div class="input-group">
+              <input #box (keyup.enter)="onEnterCliente(box.value)" [value]="cli" type="text" class="form-control">
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{sucursal}}</button>
+                <div  class="dropdown-menu">
+                  <a class="dropdown-item" (click)="onClickSucursal(0)">Bs. As.</a>
+                  <a class="dropdown-item" (click)="onClickSucursal(1)">Rosario</a>
+                  <a class="dropdown-item" (click)="onClickSucursal(2)">Córdoba</a>
+                  <a class="dropdown-item" (click)="onClickSucursal(3)">Santa Fe</a>
+                  <a class="dropdown-item" (click)="onClickSucursal(4)">La Plata</a>
+                  <a class="dropdown-item" (click)="onClickSucursal(5)">Campana</a>
+                </div>
+              </div>
+            </div>
+
+            <input #customRange (input)="onRadioDrag(customRange.value)"
+                                (mouseup)="onRadioChange(customRange.value)"
+                  [value]="radio" class="mt-4 mb-3 custom-range" type="range" min="0.05" max="2" step="0.05">
+            <span>Radio: <b>{{radio * 1000}} mts.</b></span>
+            <div class="row">
+              <div class="offset-3">
+                <button (click)='onClickReGeocodificar()' type="button" style="font-size: 11px; font-weight: bold; border-radius: 10px;" class="btn btn-outline-primary mt-3 ml-2">Geocodificar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Geocodifación -->
+        <div class="col-6 ml-3 non-clickable" *ngIf="geocodeMode">
+          <div class="shadow card border-info mt-4 clickable">
+            <div class="card-header"><b>Geocodificar</b></div>
+            <div class="card-body text-info">
+              <input #boxDir (keyup.enter)="onEnterDireccion(boxDir.value)" value="{{direc}}" type="text" class="form-control" placeholder="Ingresar dirección...">
+              <div class="ml-2 mt-2">
+                <img width="20px" height="30px" src="https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2.png">
+                <p *ngIf="location" style="display: inline-block; margin-top: 10px; margin-left: 8px">{{location.lat}},{{location.lng}}</p>
+                <button (click)='onClickGrabarCoordenadas()' data-dismiss="modal" type="button" class="btn btn-primary ml-4">Grabar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mostrar Todos -->
+    <div class="col-4 non-clickable">
+      <div class="row">
+        <div class="offset-7 col-5">
+          <div class="card p-2 shadow mt-4" style="border-radius: 10px;">
+            <div class="row">
+              <div style="margin-left: 30px;">
+                <button (click)='onClickMostrarTodos()' type="button" style="font-size: 11px; font-weight: bold; border-radius: 10px;"
+                        class="btn btn-outline-primary clickable">Mostrar todos</button>
+              </div>
+
+              <div class="col-12 mt-1">
+                <div class="custom-control custom-switch clickable ml-3">
+                  <input (click)="onClickAgrupar()" type="checkbox" [checked] = "isAgrupado"
+                  class="custom-control-input" id="customSwitch1">
+                  <label class="custom-control-label" for="customSwitch1">Agrupar</label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--<div class="card p-2 shadow mt-4" style="float:right; border-radius: 10px;">
+        <div class="row">
+          <button (click)='onClickMostrarTodos()' type="button" style="font-size: 11px; font-weight: bold; border-radius: 10px;"
+                  class="btn btn-outline-primary clickable">Mostrar todos</button>
+          <div class="col-12 custom-control custom-switch clickable">
+            <input type="checkbox" class="custom-control-input" id="customSwitch1">
+            <label class="custom-control-label" for="customSwitch1">Agrupar</label>
+          </div>
+        </div>
+      </div>-->
+    </div>
+
+    <!-- Rutas -->
+    <div class="col-4 rutas-toolbox">
+      <div class="shadow card bg-light mt-4" style="max-width: 15rem;">
+        <div (click)="onClickRutas()" class="card-header clickable" data-toggle="collapse" data-target="#collapseRutas"
+        aria-expanded="false" aria-controls="collapseExample"><b>Rutas</b></div>
+        <div [class.show]="showRutas" class="card-body collapse fill" id="collapseRutas">
+          <div class="row">
+            <div *ngFor="let ruta of Object.keys(rutas)" class="col-12">
+              <img width="20px" class="m-1" src="{{rutas[ruta]}}">
+              <div style="display: inline-block">
+                <p class="ml-2" style="min-width:50px; max-width:140px; display: inline-block;"><b>{{ruta}}</b></p>
+                <span>({{rutasCant[ruta]}})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-8 non-clickable">
+    </div>
+
+    <!-- Clientes -->
+    <div class="col-4 clientes-toolbox">
+      <div class="shadow card bg-light mt-4" style="max-width: 15rem;">
+        <div (click)="onClickClientes()" class="card-header clickable" data-toggle="collapse" data-target="#collapseClientes"
+        aria-expanded="false" aria-controls="collapseExample"><b>Clientes</b>
+          <span *ngIf="clientes.length > 0" class="ml-2 badge badge-pill badge-primary">{{clientes.length}}</span>
+          <span *ngIf="clientesCluster.length > 0" class="ml-2 badge badge-pill badge-primary">{{clientesCluster.length}}</span>
+        </div>
+          <div [class.show]="showClientes" class="card-body body-clientes collapse fill" id="collapseClientes">
+            <div class="cli-razon mt-2" *ngFor="let cli of clientes; index as i">
+              <div (click)="onClickCliente(i)" class="list-group-item-action borderless cli-padding" style="cursor: pointer;">
+                <img class="ml-2" width="15px" height="25px" src="{{rutas[cli.ruta_madre]}}">
+                <div style="display: inline-block">
+                  <p class="ml-2" style="width:40px; max-width:40px; display: inline-block;"><b>{{cli.codigo}}</b></p>
+                  <span style="cli-razon">{{cli.razon_social}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- Button trigger modal -->
+      <button [hidden]="true" id="progressModalBtnOpen" type="button" class="col-2 btn btn-primary" data-toggle="modal" data-target="#progressModal">
+        Launch demo modal
+      </button>
+
+      <!-- Modal -->
+      <div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLongTitle">Búsqueda de clientes</h5>
+            </div>
+            <div class="modal-body">
+              <div [hidden]="!showLoader" class="lds-ellipsis mr-3" style="margin-bottom: 20px"><div></div><div></div><div></div><div></div></div>
+              <span [ngClass]="{'text-success': modalTextColor == 1}" class="align-middle">{{modalText}}</span>
+            </div>
+            <div class="modal-footer">
+              <span>Cliente: {{cli}}</span>
+              <button (click)='onClickAceptarModal()' [hidden]="!showModalAceptar" type="button" class="ml-2 btn btn-secondary" data-dismiss="modal">Aceptar</button>
+              <button id="progressModalBtnClose" [hidden]="!showModalClose" type="button" class="ml-2 btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button [hidden]="!showModalGeo" (click)='onClickGeocodificarModal()' data-dismiss="modal" type="button" class="btn btn-primary">Geocodificar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+
+</div>

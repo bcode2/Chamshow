@@ -1,0 +1,349 @@
+<div class="container-fluid">
+
+  <div class="row">
+    <agm-map #gm
+      [latitude]="cameraLatitude"
+      [longitude]="cameraLongitude"
+      [usePanning]="true"
+      [zoom]="zoom"
+      [zoomControl]="false"
+      (zoomChange)="onZoomChange($event)">
+
+      <agm-marker
+        *ngFor="let pedido of pedidos; index as i"
+        [latitude]="pedido.latitud"
+        [longitude]="pedido.longitud"
+        [iconUrl]="pedido.icon"
+        [zIndex]="pedido.elevation"
+        (markerClick)="onClickMarker(infoWindow, pedido)">
+
+        <agm-info-window #infoWindow [isOpen]="pedido.abrir">
+          <span><b>{{pedido.razon_social}} - {{pedido.cliente}}</b>  - {{pedido.cliente_tipo}}<br></span>
+          <span style="display: block;">Dir: {{pedido.direccion}}<br> <br></span>
+          <span>PP N° {{pedido.prefijo}} - {{pedido.numero}}<br></span>
+          <span class="mb-2">{{pedido.horario1_desde}} - {{pedido.horario1_hasta}} Y {{pedido.horario2_desde}} - {{pedido.horario2_hasta}}</span>
+
+          <div *ngFor="let item of pedido.items; index as j" style="overflow: hidden;">
+            <div class="mt-2" *ngIf="item.es_repuesto">
+              <img src="./assets/ic_llave.png" style="height: 22px; width: 22px;">
+              <span class="ml-1">{{item.descripcion}} ({{item.forma_comercial}})</span>
+              <p id="no-margin" class="badge badge-pill badge-primary ml-2 mr-2" style="font-size: 12px;">{{item.cantidad}}</p>
+            </div>
+
+            <div class="mt-2" *ngIf="!item.es_repuesto">
+              <span>{{item.descripcion}} ({{item.forma_comercial}})<br></span>
+              <div style="float: left;" class="circle m-2"
+              [ngStyle]="{'background-color' :  item.tipo_service == 'L' ? '#13CCBA' :
+                                                item.tipo_service == 'R' ? '#FF0000' :
+                                                item.tipo_service == 'I' ? '#E6E600' : '#333333'}">{{item.tipo_service}}</div>
+              <img src="./assets/ic_equipo.png" style="height: 40px; width: 35px;">
+              <p class="badge badge-pill badge-primary mt-3 mr-2" style="font-size: 14px; float: center;">{{pedido.pendientes}}/{{item.cantidad}}</p>
+
+              <button [hidden]="cargandoDistancia || pedido.en_ruta || showTecnicos" *ngIf="j + 1 == pedido.items.length" (click)='onClickAgregar(pedido)' type="button" class="btn btn-outline-primary" style="float: right; font-size: 13px; margin-top: 12px">Agregar</button>
+              <button *ngIf="pedido.en_ruta" type="button" class="btn btn-outline-danger" (click)='onClickQuitar(pedido)' style="float: right; font-size: 13px; margin-top: 12px">Quitar</button>
+              <div [hidden]="!cargandoDistancia" class="lds-ellipsis" style="float: right; margin-top: 10px; margin-right: 10px;"><div></div><div></div><div></div><div></div></div>
+            </div>
+          </div>
+
+          <div style="float: right;">
+            <img src="./assets/ic_star_s.png" style="display: inline-block" width="15px" height="15px">
+            <span *ngIf="!pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn">Marcar como especial</span>
+            <span *ngIf="pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn-red">Desmarcar</span>
+          </div>
+
+          <!-- Pedido solapado -->
+          <div *ngIf="pedidosSolapadosCli.length > 0">
+            <div *ngFor="let solapado of pedidosSolapadosCli; index as k">
+              <div style="height: 8px;"></div>
+              <hr>
+              <span><b>{{solapado.razon_social}} - {{solapado.cliente}}</b>  - {{solapado.cliente_tipo}}<br></span>
+              <span style="display: block;">Dir: {{solapado.direccion}}<br> <br></span>
+              <span>PP N° {{pedido.prefijo}} - {{solapado.numero}}<br></span>
+              <span class="mb-2">{{solapado.horario1_desde}} - {{solapado.horario1_hasta}} Y {{solapado.horario2_desde}} - {{solapado.horario2_hasta}}</span>
+
+              <div *ngFor="let solapadoItem of solapado.items; index as l" style="overflow: hidden;">
+                <div class="mt-2" *ngIf="solapadoItem.es_repuesto">
+                  <img src="./assets/ic_llave.png" style="height: 22px; width: 22px;">
+                  <span class="ml-1">{{solapadoItem.descripcion}} ({{solapadoItem.forma_comercial}})</span>
+                  <p id="no-margin" class="badge badge-pill badge-primary ml-2 mr-2" style="font-size: 12px;">{{solapadoItem.cantidad}}</p>
+                </div>
+
+                <div class="mt-2" *ngIf="!solapadoItem.es_repuesto">
+                  <span>{{solapadoItem.descripcion}} ({{solapadoItem.forma_comercial}})<br></span>
+                  <div style="float: left;" class="circle m-2"
+                  [ngStyle]="{'background-color' :  solapadoItem.tipo_service == 'L' ? '#13CCBA' :
+                                                    solapadoItem.tipo_service == 'R' ? '#FF0000' :
+                                                    solapadoItem.tipo_service == 'I' ? '#E6E600' : '#333333'}">{{solapadoItem.tipo_service}}</div>
+                  <img src="./assets/ic_equipo.png" style="height: 40px; width: 35px;">
+                  <p class="badge badge-pill badge-primary mt-3 mr-2" style="font-size: 14px; float: center;">{{solapado.pendientes}}/{{solapadoItem.cantidad}}</p>
+
+                  <button [hidden]="cargandoDistancia || solapado.en_ruta || showTecnicos" *ngIf="l + 1 == solapado.items.length" (click)='onClickAgregar(solapado)' type="button" class="btn btn-outline-primary" style="float: right; font-size: 13px; margin-top: 12px">Agregar</button>
+                  <button *ngIf="solapado.en_ruta" type="button" class="btn btn-outline-danger" (click)='onClickQuitar(solapado)' style="float: right; font-size: 13px; margin-top: 12px">Quitar</button>
+                  <div [hidden]="!cargandoDistancia" class="lds-ellipsis" style="float: right; margin-top: 10px; margin-right: 10px;"><div></div><div></div><div></div><div></div></div>
+                </div>
+              </div>
+
+              <div style="float: right;">
+                <img src="./assets/ic_star_s.png" style="display: inline-block" width="15px" height="15px">
+                <span *ngIf="!pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn">Marcar como especial</span>
+                <span *ngIf="pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn-red">Desmarcar</span>
+              </div>
+            </div>
+          </div>
+
+        </agm-info-window>
+      </agm-marker>
+
+      <!-- Ruta de tecnico -->
+      <agm-polyline
+          [strokeWeight]="8"
+          [strokeColor]="colorArray[17]"
+          [clickable]="true">
+            <agm-polyline-point *ngFor="let punto of puntosRuta"
+                                [latitude]="punto.latitud"
+                                [longitude]="punto.longitud">
+            </agm-polyline-point>
+      </agm-polyline>
+
+      <!-- Puntos medios de ruta -->
+      <div *ngFor="let punto of puntosRuta">
+        <agm-marker *ngIf="punto.midpoint"
+                    [latitude]="punto.latitud"
+                    [longitude]="punto.longitud"
+                    [markerDraggable]="true"
+                    iconUrl="./assets/ic_cross.png"
+                    (dragEnd)="onDragEndMidpoint(punto, $event)">
+        </agm-marker>
+      </div>
+
+      <!-- Todas las rutas -->
+      <div *ngIf="rutasMode">
+        <agm-polyline
+            *ngFor="let empleado of empleados; index as i"
+            [strokeWeight]="8"
+            [strokeColor]="colorArray[i]"
+            [clickable]="true">
+              <agm-polyline-point *ngFor="let punto of empleado.puntosRuta"
+                                  [latitude]="punto.latitud"
+                                  [longitude]="punto.longitud">
+              </agm-polyline-point>
+        </agm-polyline>
+      </div>
+
+      <!-- Area para adherir a ruta -->
+      <div *ngIf="showPedidoArea">
+        <agm-circle
+          *ngFor="let pedido of pedidos"
+          [latitude]="pedido.latitud"
+          [longitude]="pedido.longitud"
+          [radius]="pedidoRadio"
+          [fillColor]="'red'">
+        </agm-circle>
+      </div>
+
+    </agm-map>
+  </div>
+
+
+  <div class="row">
+    <!-- Rutas -->
+    <div class="col-3 mt-2">
+      <div class="shadow card" style="height: 800px; width: 300px;">
+        <div class="card-header">
+          <img *ngIf="!showTecnicos" (click)="onClickAtras()" class="mr-2 arrow-select"
+            src="./assets/ic_arrow.png" width="30px" height="30px">
+          <span style="margin-top: 10px;"><b>Pedidos en Ruta</b></span>
+        </div>
+        <div class="scrollable-field mr-2">
+          <div *ngIf="showTecnicos">
+            <!-- Datepicker -->
+            <div class="m-3 form-group">
+              <div class="input-group">
+                <input class="form-control" style="font-size: 14px;" placeholder="dd-mm-yyyy" (dateSelect)="onChangeFecha()"
+                       name="dp" [(ngModel)]="fecha" ngbDatepicker [dayTemplate]="customDay" [markDisabled]="isDisabled" #d="ngbDatepicker">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button">
+                    <img width="20px" height="20px" src="./assets/ic_calendar.png">
+                  </button>
+                </div>
+              </div>
+            </div>
+            <ng-template #customDay let-date let-currentMonth="currentMonth" let-selected="selected" let-disabled="disabled" let-focused="focused">
+              <span class="custom-day" [class.weekend]="isWeekend(date)" [class.focused]="focused"
+                    [class.selected-day]="selected" [class.hidden]="date.month !== currentMonth" [class.text-muted]="disabled">
+                {{ date.day }}
+              </span>
+            </ng-template>
+            <!-- Datepicker END -->
+            <div *ngIf="cargandoRutas" class="col-12 mt-5">
+                <div class="lds-ellipsis" style="margin-bottom: 20px;"><div></div><div></div><div></div><div></div></div>
+                <p class="mt-2 ml-2">Cargando rutas...</p>
+            </div>
+
+            <ul *ngIf="!cargandoRutas" class="list-group list-group-flush">
+              <li>
+                <div *ngFor="let tec of empleados; index as i" (click)="onClickEmpleado(i)" class="list-group-item item-select">
+                  <p style="font-size: 14px; margin: 0px;"><b>{{empleadosPP[tec.numero].nombre}}</b></p>
+                  <span [ngClass]="empleadosPP[tec.numero].total > 0 ? 'badge badge-pill badge-primary' : 'badge badge-pill badge-light'"
+                    style="font-size: 12px; margin-top: 6px; margin-right: 25px; height: 20px; width: 30px;">{{empleadosPP[tec.numero].total}}</span>
+                    <span *ngIf="empleadosPP[tec.numero].limp > 0" class="badge badge-pill badge-info" style="font-size: 12px; margin-top: 6px; margin-right: 6px; height: 20px; width: 30px;">{{empleadosPP[tec.numero].limp}}</span>
+                    <span *ngIf="empleadosPP[tec.numero].rep > 0"  class="badge badge-pill badge-danger" style="font-size: 12px; margin-top: 6px; margin-right: 6px; height: 20px; width: 30px;">{{empleadosPP[tec.numero].rep}}</span>
+                    <span *ngIf="empleadosPP[tec.numero].inst > 0"  class="badge badge-pill badge-warning" style="font-size: 12px; margin-top: 6px; margin-right: 6px; height: 20px; width: 30px;">{{empleadosPP[tec.numero].inst}}</span>
+                    <span *ngIf="empleadosPP[tec.numero].veri > 0"  class="badge badge-pill badge-dark" style="font-size: 12px; margin-top: 6px; margin-right: 6px; height: 20px; width: 30px;">{{empleadosPP[tec.numero].veri}}</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div *ngIf="!showTecnicos">
+            <p style="margin-top: 5px; padding: 0px;"></p>
+            <span class="ml-3"><b>{{empleados[empleadoSeleccionado].nombre}}</b></span>
+            <div class="ml-3 mb-3">
+              <img class="mr-2" width="20px" height="20px" src="./assets/ic_calendar.png">
+              <span style="display: inline;">{{getFechaFormat()}}</span>
+            </div>
+
+            <div class="col-12">
+              <span class="ml-2 mr-2"><b>Modo</b></span>
+              <button (click)="onClickCambioModo('transit')" [ngClass]="modo == 'transit' ? 'btn btn-secondary' : 'btn btn-outline-secondary'" class="ml-2 mr-3" type="button">
+                <img width="30px" height="30px" [src]="url_transit">
+              </button>
+              <button (click)="onClickCambioModo('driving')" [ngClass]="modo == 'driving' ? 'btn btn-secondary' : 'btn btn-outline-secondary'" type="button">
+                <img width="30px" height="30px" [src]="url_driving">
+              </button>
+            </div>
+
+            <div class="col-12 mt-3">
+              <span [hidden]="rutasMode" class="badge badge-pill badge-secondary ml-1" style="font-size: 14px;">Pedidos: {{almuerzoAsignado ? pedidosEnRuta.length - 1 : pedidosEnRuta.length}}</span>
+              <span [hidden]="!rutasMode" class="badge badge-pill badge-secondary ml-1" style="font-size: 14px;">Pedidos: {{cantPedidosTotal}}</span>
+              <span class="badge badge-pill badge-secondary ml-3 mb-2" style="font-size: 14px;">Equipos: {{cantTotalEq}}</span>
+            </div>
+
+            <div class="col-11 mt-1 ml-2 mb-2">
+              <span class="text-muted" style="font-size: 14px">Viáticos estimados: ${{viaticosTotal}}<br></span>
+              <span *ngIf="!editMode" class="text-muted" style="font-size: 14px">Distancia recorrida: {{(distanciaRecorrida / 1000) | number : '1.2-2'}} Km</span>
+              <span *ngIf="editMode" class="text-muted" style="font-size: 14px">Distancia recorrida: {{distanciaRecorrida | number : '1.2-2'}} Km</span>
+            </div>
+
+            <div class="col-4 ml-2 mb-2">
+              <button (click)="onClickInvertir()" style="font-size: 11px;" type="button" class="btn btn-outline-secondary">
+                <img src="./assets/ic_invert.png" width="18px" height="18px"/>
+                <span class="ml-2">Invertir</span>
+              </button>
+            </div>
+
+            <div [hidden]="!cargandoRutas" class="col-12 mt-5">
+                <div class="lds-ellipsis" style="margin-bottom: 20px;"><div></div><div></div><div></div><div></div></div>
+                <p class="mt-2 ml-2">Cargando ruta...</p>
+            </div>
+
+            <!-- Lista de Pedidos en Ruta -->
+            <ul class="list-group list-group-flush">
+              <li>
+                <div *ngFor="let p of pedidosEnRuta" [class.almuerzo]='p.esAlmuerzo' class="list-group-item item-select" [@fadeInOut]>
+                  <div class="row" (click)="onClickPedidoEnRuta(p)">
+                    <div class="col-1">
+                      <div *ngFor="let item of p.items; index as i">
+                        <div [hidden]="item.es_repuesto" class="circle-sm"
+                        [ngStyle]="{'background-color' :  item.tipo_service == 'L' ? '#13CCBA' :
+                                                          item.tipo_service == 'R' ? '#FF0000' :
+                                                          item.tipo_service == 'I' ? '#E6E600' : '#333333'}">{{item.tipo_service}}</div>
+                      </div>
+                    </div>
+                    <div class="offset-1 col-9">
+                      <div class="row">
+                        <span *ngIf="!p.esAlmuerzo" class="col-12" style="font-size: 11px;">{{p.razon_social}}</span>
+                        <span *ngIf="p.esAlmuerzo" class="col-12" style="font-size: 13px; font-weight: bold;">Receso almuerzo</span>
+                        <img [hidden]='p.esAlmuerzo' class="ml-2" src="./assets/ic_equipo.png" style="height: 30px; width: 28px;">
+                        <span [hidden]='p.esAlmuerzo' class="badge badge-pill badge-primary" style="font-size: 12px; margin-top: 6px; height: 20px; width: 30px;">{{p.pendientes}}</span>
+                        <img class="img-clock ml-3" src="./assets/ic_clock.png" style="height: 18px; width: 18px; margin-top: 6px;">
+                        <div class="ml-1" style="margin-top: 3px;">
+                          <span [ngClass]="{'text-danger' : p.llegada_fuera}">{{p.llegada}}</span>
+                          <span> - </span>
+                          <span [ngClass]="{'text-danger' : p.salida_fuera}">{{p.salida}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón para grabar la ruta -->
+      <div *ngIf="!showTecnicos" class="card shadow mt-3" style="background-color: white; width: 165px; margin-left: 68px;">
+        <button (click)="onClickGrabar()" type="button" class="btn btn-outline-primary" style="float: center;"><b>Grabar</b></button>
+      </div>
+    </div>
+
+    <!-- Buscador clientes -->
+    <div class="offset-5 col-4" style="height: 100%;">
+      <div class="row" style="float: right;">
+        <button (click)="onClickVerRutas()" type="button" style="height: 38px;" class="shadow mt-2" [ngClass]="rutasMode ? 'btn btn-primary' : 'btn btn-light'">Ver rutas</button>
+
+        <div class="form-inline m-2" style="float: right;">
+          <input #box (keyup.enter)="onEnterCodigo(box.value)" class="form-control shadow mr-sm-2" type="search" placeholder="Ingresar código" aria-label="Search">
+          <button (click)="onEnterCodigo(box.value)" class="btn btn-light shadow">Buscar</button>
+        </div>
+      </div>
+
+      <div *ngFor="let p of pedidosBusqueda" class="row card shadow m-1" style="width: 270px; cursor: pointer; float: right;">
+        <div class="row m-2" (click)="onClickPedidoEnRuta(p)">
+          <div class="col-1">
+            <div *ngFor="let item of p.items; index as i">
+              <div [hidden]="item.es_repuesto" class="circle-sm"
+              [ngStyle]="{'background-color' :  item.tipo_service == 'L' ? '#13CCBA' :
+                                                item.tipo_service == 'R' ? '#BA906D' :
+                                                item.tipo_service == 'I' ? '#A9576B' : '#333333'}">{{item.tipo_service}}</div>
+            </div>
+          </div>
+          <div class="offset-1 col-9">
+            <div class="row">
+              <span class="col-12" style="font-size: 11px;">{{p.razon_social}} - <b>{{p.cliente}}</b></span>
+              <img class="ml-2" src="./assets/ic_equipo.png" style="height: 30px; width: 28px;">
+              <span class="badge badge-pill badge-primary" style="font-size: 12px; margin-top: 6px; height: 20px; width: 30px;">{{p.pendientes}}</span>
+              <span class="ml-2 mt-2" style="font-size: 11px;">PP N°: <b>{{p.numero}}</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Button trigger modal -->
+  <button [hidden]="true" id="progressModalBtnOpen" type="button" class="col-2 btn btn-primary" data-toggle="modal" data-target="#progressModal">
+    Launch demo modal
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">{{modalTitle}}</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-2">
+              <div [hidden]="!showModalLoading" class="lds-ellipsis" style="margin-bottom: 20px;"><div></div><div></div><div></div><div></div></div>
+              <img *ngIf="showOk" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_ok.png">
+              <img *ngIf="showError" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_error.png">
+              <img *ngIf="showInfo" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_info.png">
+            </div>
+            <div class="col-9">
+              <p [innerHTML]="modalText" class="align-middle ml-2"></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="progressModalBtnClose" [hidden]="!showModalClose" type="button" class="ml-2 btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button (click)="onClickCancelarModal()"  [hidden]="!showModalCancelar" type="button" class="ml-2 btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button (click)="onClickAceptarModal()" [hidden]="!showModalAceptar" type="button" class="ml-2 btn btn-primary" data-dismiss="modal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

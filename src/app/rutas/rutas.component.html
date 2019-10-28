@@ -1,0 +1,306 @@
+<div class="container-fluid">
+
+  <div class="row">
+    <agm-map #gm
+      [latitude]="cameraLatitude"
+      [longitude]="cameraLongitude"
+      [usePanning]="true"
+      [zoom]="zoom"
+      [zoomControl]="false">
+
+      <!-- Clientes -->
+      <agm-marker
+        *ngFor="let cliente of clientes"
+        [latitude]="cliente.latitud"
+        [longitude]="cliente.longitud"
+        [iconUrl]="cliente.icon"
+        (markerClick)="onClickMarker(infoWindow, cliente)">
+
+        <agm-info-window #infoWindow [isOpen]="cliente.abrir">
+          <span><b>{{cliente.razon_social}} - {{cliente.codigo}}</b><br></span>
+          <span><b>{{cliente.ruta}}</b><br></span>
+          <span>Dir: {{cliente.direccion}}<br></span>
+          <!--<button (click)="'C:\comercial.exe'" type="button" style="font-size: 11px; font-weight: bold; border-radius: 10px;" class="btn btn-outline-primary mt-3 ml-2">Ver detalle</button>-->
+          <!--<a href="C:/comercial/sist_com.exe">Ver Detalle</a>-->
+
+          <div *ngIf="clientesSolapadosView.length > 0">
+              <div *ngFor="let solapado of clientesSolapadosView">
+                <hr>
+                <span><b>{{solapado.razon_social}}</b><br></span>
+                <span>Codigo: {{solapado.codigo}}<br></span>
+                <span>Ruta: {{solapado.ruta}}<br></span>
+                <span>Dir: {{solapado.direccion}}</span>
+              </div>
+          </div>
+        </agm-info-window>
+
+      </agm-marker>
+
+      <!-- Posiciones del recorrido -->
+      <agm-polyline *ngFor="let posicion of posiciones ; index as i"
+          [strokeWeight]="8"
+          [strokeColor]="'blue'"
+          [strokeOpacity]="25"
+          [clickable]="true">
+          <div *ngIf="i != posiciones.length - 1">
+            <agm-polyline-point
+                              [latitude]="posicion.latitud"
+                              [longitude]="posicion.longitud">
+            </agm-polyline-point>
+            <agm-polyline-point
+                              [latitude]="posiciones[i + 1].latitud"
+                              [longitude]="posiciones[i + 1].longitud">
+            </agm-polyline-point>
+
+            <agm-icon-sequence  [fillColor]="'blue'"
+                                [fillOpacity]="100"
+                                [strokeColor]="'blue'"
+                                [strokeWeight]="3"
+                                [strokeOpacity]="100"
+                                [scale]="2"
+                                [path]="'FORWARD_CLOSED_ARROW'">
+            </agm-icon-sequence>
+          </div>
+      </agm-polyline>
+      <!-- InfoWindow de posiciones -->
+      <agm-marker
+        *ngFor="let posicion of posiciones"
+        [latitude]="posicion.latitud"
+        [longitude]="posicion.longitud"
+        [opacity]="0">
+
+        <agm-info-window #infoWindow>
+          <span><b>{{posicion.codigo}}</b><br></span>
+          <span>{{posicion.velocidad}} a las {{posicion.hora}}<br></span>
+        </agm-info-window>
+      </agm-marker>
+
+      <!-- Posicion actual -->
+      <agm-marker
+        *ngFor="let pos of trackingGPSView"
+        [latitude]="pos.latitud"
+        [longitude]="pos.longitud"
+        [iconUrl]="pos.icon"
+        (markerClick)="onClickMarker(infoWindow, pos)">
+
+        <agm-info-window #infoWindow [isOpen]="pos.abrir">
+          <span><b>{{pos.codigo}}</b><br></span>
+          <span><b>{{pos.velocidad}} Km/h</b> a las <b>{{pos.hora}}</b><br></span>
+        </agm-info-window>
+
+      </agm-marker>
+
+    </agm-map>
+  </div>
+
+  <div class="row" id="toolboxGroup">
+
+    <!-- Rutas -->
+    <div class="col-lg-3 col-md-5 rutas-toolbox" style="padding-left: 8px;">
+      <div class="shadow card bg-light mt-2">
+        <div (click)="onClickRutas()" class="card-header clickable" data-toggle="collapse" data-target="#collapseRutas"
+        aria-expanded="false" aria-controls="collapseExample" >
+          <b>Rutas</b>
+          <span *ngIf="loteSeleccionado" style="float: right;" class="mt-1 badge badge-pill badge-primary">{{loteSeleccionado.ruta}}</span>
+        </div>
+        <div [class.show]="showRutas" class="collapse fill" id="collapseRutas" style="min-height: 220px;">
+          <div class="col-4 mt-3">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary dropdown-toggle" style="font-size: 12px;" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{sucursal}}</button>
+              <div  class="dropdown-menu">
+                <a class="dropdown-item" (click)="onClickSucursal(0)">Buenos Aires</a>
+                <a class="dropdown-item" (click)="onClickSucursal(1)">Rosario</a>
+                <a class="dropdown-item" (click)="onClickSucursal(2)">Córdoba</a>
+                <a class="dropdown-item" (click)="onClickSucursal(3)">Santa Fe</a>
+                <a class="dropdown-item" (click)="onClickSucursal(4)">La Plata</a>
+                <a class="dropdown-item" (click)="onClickSucursal(5)">Campana</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datepicker -->
+          <div class="col-8 mt-2 form-group">
+            <div class="input-group">
+              <input class="form-control" style="font-size: 14px;" placeholder="dd-mm-yyyy" (dateSelect)="onChangeFecha()"
+                     name="dp" [(ngModel)]="fecha" ngbDatepicker [dayTemplate]="customDay" [markDisabled]="isDisabled" #d="ngbDatepicker">
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button">
+                  <img width="20px" height="20px" src="./assets/ic_calendar.png">
+                </button>
+              </div>
+            </div>
+          </div>
+          <ng-template #customDay let-date let-currentMonth="currentMonth" let-selected="selected" let-disabled="disabled" let-focused="focused">
+            <span class="custom-day" [class.weekend]="isWeekend(date)" [class.focused]="focused"
+                  [class.selected-day]="selected" [class.hidden]="date.month !== currentMonth" [class.text-muted]="disabled">
+              {{ date.day }}
+            </span>
+          </ng-template>
+          <!-- Datepicker END -->
+          <div class="ml-3 mt-3" *ngIf="noHayLotes">
+            <p>No se encontraron lotes.</p>
+          </div>
+          <div [hidden]="!showLoader" class="lds-ellipsis ml-2" style="margin-bottom: 20px"><div></div><div></div><div></div><div></div></div>
+          <ul class="list-group list-group-flush" >
+            <li>
+              <div *ngFor="let lote of lotes"  class="list-group-item item-select" style="padding: 6px;"
+                (click)="onClickLote(lote)" [ngClass]="{'selected-item': lote == loteSeleccionado}">
+                <div class="row">
+                  <div class="col-4">
+                    <span class="ml-2" style="font-size: 12px;">{{lote.prefijo}} - {{lote.numero}}</span>
+                  </div>
+                  <div class="col-4">
+                    <span style="font-size: 12px;"><b>{{lote.ruta}}</b></span>
+                  </div>
+                  <div class="col-4">
+                    <span style="font-size: 12px;">{{lote.patente}}</span>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9 col-md-7 non-clickable">
+    </div>
+
+    <!-- Clientes -->
+    <div class="col-lg-3 col-md-5 clientes-toolbox" style="padding-left: 8px;">
+      <div class="shadow card bg-light mt-4">
+        <div (click)="onClickClientes()" class="card-header clickable" data-toggle="collapse" data-target="#collapseClientes"
+        aria-expanded="false" aria-controls="collapseExample"><b>Clientes</b> <span *ngIf="clientes" class="ml-2 badge badge-pill badge-primary">{{clientes.length}}</span></div>
+          <div [class.show]="showClientes" class="card-body body-clientes collapse fill" id="collapseClientes">
+            <div class="cli-razon mt-2" *ngFor="let cli of clientes; index as i">
+              <div (click)="onClickCliente(cli, i)" class="list-group-item-action borderless cli-padding" style="cursor: pointer;">
+                <div style="display: inline-block">
+                  <img class="ml-2 mr-1" src="{{cli.icon}}" height="25px" width="15px">
+                  <p class="ml-2" style="width:40px; max-width:40px; display: inline-block;"><b>{{cli.codigo}}</b></p>
+                  <span style="cli-razon">{{cli.razon_social}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9 col-md-7 non-clickable">
+    </div>
+
+    <!-- Referencias -->
+    <div class="col-lg-3 col-md-5" style="padding-left: 8px;">
+      <div class="shadow card bg-light mt-4">
+        <div class="card-header clickable"><b>Información</b></div>
+          <div class="card-body body-clientes fill p-2">
+            <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+              <a style="font-size: 10px;" class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Resumen</a>
+              <a style="font-size: 10px;" class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Referencias</a>
+            </div>
+          </nav>
+          <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+              <div *ngIf="resumen">
+                <div class="row p-2">
+                  <span class="col-12">Km recorridos: <b>{{resumen.km_total}} Km/h</b></span>
+                  <span class="col-12">Velocidad máxima: <b>{{resumen.velocidad_max}} Km/h</b></span>
+                  <span class="col-12">Velocidad promedio: <b>{{resumen.velocidad_avg}} Km/h</b></span>
+                </div>
+              </div>
+              <div *ngIf="!resumen">
+                <span style="margin: 8px;">No hay lote seleccionado.</span>
+              </div>
+              <div *ngIf="loadingResumen" class="lds-ellipsis" style="margin-bottom: 20px;"><div></div><div></div><div></div><div></div></div>
+            </div>
+            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+              <div class="row">
+                <div class="col-1">
+                  <img src="./assets/ic_camion.png" height="18px" width="30px">
+                </div>
+                <div class="col-10">
+                  <span style="font-size: 12px; margin-left: 5px;">Posición actual del camión</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-1">
+                  <img style="margin-left: 8px;" src="https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_green.png" height="22px" width="12px">
+                </div>
+                <div class="col-10">
+                  <span style="font-size: 12px; margin-left: 5px;">Cliente de la ruta Visitado</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-1">
+                  <img style="margin-left: 8px;" src="https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_red.png" height="22px" width="12px">
+                </div>
+                <div class="col-10">
+                  <span style="font-size: 12px; margin-left: 5px;">Cliente de la ruta No Visitado</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-1">
+                  <img style="margin-left: 8px;" src="https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_black.png" height="22px" width="12px">
+                </div>
+                <div class="col-10">
+                  <span style="font-size: 12px; margin-left: 5px;">Cliente de la ruta sin orden, sin pedidos</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-1">
+                  <img style="margin-left: 8px;" src="https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_grey.png" height="22px" width="12px">
+                </div>
+                <div class="col-10">
+                  <span style="font-size: 12px; margin-left: 5px;">Cliente Fuera de Ruta Visitado</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-1">
+                  <img style="margin-left: 8px;" src="https://raw.githubusercontent.com/Concept211/Google-Maps-Markers/master/images/marker_purple.png" height="22px" width="12px">
+                </div>
+                <div class="col-10">
+                  <span style="font-size: 12px; margin-left: 5px;">Cliente Fuera de Ruta No Visitado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          </div>
+      </div>
+    </div>
+
+  <!-- Button trigger modal -->
+  <button [hidden]="true" id="progressModalBtnOpen" type="button" class="col-2 btn btn-primary" data-toggle="modal" data-target="#progressModal">
+    Launch demo modal
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">{{modalTitle}}</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-2">
+              <div [hidden]="!showModalLoading" class="lds-ellipsis" style="margin-bottom: 20px;"><div></div><div></div><div></div><div></div></div>
+              <img *ngIf="showOk" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_ok.png">
+              <img *ngIf="showError" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_error.png">
+              <img *ngIf="showInfo" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_info.png">
+            </div>
+            <div class="col-9">
+              <p [innerHTML]="modalText" class="align-middle ml-2"></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="progressModalBtnClose" [hidden]="!showModalClose" type="button" class="ml-2 btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button [hidden]="!showModalCancelar" type="button" class="ml-2 btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button [hidden]="!showModalAceptar" type="button" class="ml-2 btn btn-primary" data-dismiss="modal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
