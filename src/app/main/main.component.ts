@@ -328,26 +328,9 @@ export class MainComponent implements OnInit {
           //Cierra el modal de progreso
           this.showLoader = false;
           document.getElementById("progressModalBtnClose").click();
-          //this.clientesCluster = clientesArray;
+          this.clientesCluster = clientesArray;
           this.cdr.detectChanges();
         }, 10000);
-      }
-      else{
-        clientesArray = this.clientesCluster.splice(0, this.clientesCluster.length);
-        this.cdr.detectChanges();
-
-        //Mostrar el modal para el progreso de búsqueda
-        /*this.showLoader = true;
-        document.getElementById("progressModalBtnOpen").click();
-        this.cdr.detectChanges();
-
-        setTimeout(() => {
-          //Cierra el modal de progreso
-          this.showLoader = false;
-          document.getElementById("progressModalBtnClose").click();
-          //this.clientes = clientesArray;
-          this.cdr.detectChanges();
-        }, 10000);*/
       }
     }
   }
