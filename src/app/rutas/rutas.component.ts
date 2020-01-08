@@ -224,10 +224,12 @@ export class RutasComponent implements OnInit {
             console.log(this.posiciones);
             this.cameraLatitude = midPoint.latitud;
             this.cameraLongitude = midPoint.longitud;
-            if (this.posiciones.length > 10000)
-              this.posiciones = this.posiciones.filter( (a,i) => i % 4 == 0);
-            else if (this.posiciones.length > 5000)
-              this.posiciones = this.posiciones.filter( (a,i) => i % 3 == 0);
+            if (this.posiciones.length >= 20000)
+              this.posiciones = this.posiciones.filter( (_,i) => i % 10 == 0);
+            else if (this.posiciones.length >= 10000)
+              this.posiciones = this.posiciones.filter( (_,i) => i % 8 == 0);
+            else if (this.posiciones.length >= 5000)
+              this.posiciones = this.posiciones.filter( (_,i) => i % 6 == 0);
             console.log(this.posiciones);
           }
           this.hideModal();
