@@ -13,19 +13,19 @@ const apiKey = 'AIzaSyCk_QmOe4BTCWUkccQODdkejeJAZEfSL3E';
 export class RoadshowService {
 
   API = {
-    getClientes: url_roadshow_api             + 'Get_Clientes_Cercanos',
-    getClientesTodos: url_roadshow_api        + 'Get_Clientes',
-    getPedidosSETE: url_roadshow_api          + 'Get_Pedidos_Sete',
-    getRutasSete: url_roadshow_api            + 'Get_Hoja_Ruta_Sete',
-    getEmpleadosSETE: url_roadshow_api        + 'Get_Empleados_Sete',
-    getDistancia: url_roadshow_api            + 'Get_Distance_Matrix',
-    getLotes: url_roadshow_api                + 'Get_Lotes_Fecha',
-    getRecorridoCamion: url_roadshow_api      + 'Get_Recorrido_Camion',
-    getResumenCamion: url_roadshow_api        + 'Get_Resumen_Camion',
-    getTrackingGPS: url_roadshow_api          + 'Get_Tracking_Gps',
+    getClientes:            url_roadshow_api  + 'Get_Clientes_Cercanos',
+    getClientesTodos:       url_roadshow_api  + 'Get_Clientes',
+    getPedidosSETE:         url_roadshow_api  + 'Get_Pedidos_Sete',
+    getRutasSete:           url_roadshow_api  + 'Get_Hoja_Ruta_Sete',
+    getEmpleadosSETE:       url_roadshow_api  + 'Get_Empleados_Sete',
+    getDistancia:           url_roadshow_api  + 'Get_Distance_Matrix',
+    getLotes:               url_roadshow_api  + 'Get_Lotes_Fecha',
+    getRecorridoCamion:     url_roadshow_api  + 'Get_Recorrido_Camion',
+    getResumenCamion:       url_roadshow_api  + 'Get_Resumen_Camion',
+    getTrackingGPS:         url_roadshow_api  + 'Get_Tracking_Gps',
     postCoordenadasCliente: url_roadshow_api  + 'Post_Coordenadas_Cliente',
-    postPedidoEspecial: url_roadshow_api      + 'Post_Pedido_Especial',
-    postRoadshowRuteo: url_roadshow_api       + 'Post_Roadshow_Ruteo'
+    postPedidoEspecial:     url_roadshow_api  + 'Post_Pedido_Especial',
+    postRoadshowRuteo:      url_roadshow_api  + 'Post_Roadshow_Ruteo'
   }
 
   constructor(private http: HttpClient) { }

@@ -121,7 +121,7 @@
           <!-- Datepicker -->
           <div class="col-8 mt-2 form-group">
             <div class="input-group">
-              <input class="form-control" style="font-size: 14px;" placeholder="dd-mm-yyyy" (dateSelect)="onChangeFecha()"
+              <input class="form-control" style="font-size: 16px;" placeholder="dd-mm-yyyy" (dateSelect)="onChangeFecha()"
                      name="dp" [(ngModel)]="fecha" ngbDatepicker [dayTemplate]="customDay" [markDisabled]="isDisabled" #d="ngbDatepicker">
               <div class="input-group-append">
                 <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button">

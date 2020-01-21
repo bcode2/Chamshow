@@ -130,6 +130,7 @@ export class RutasComponent implements OnInit {
     });
   }
 
+  //Proceso en background para ir actualizando las posiciones de los camiones cada 1 minuto.
   startTimer() {
     this.interval = setInterval(() => {
       this.roadshowService.getTrackingGPS().subscribe(res => {
@@ -220,16 +221,25 @@ export class RutasComponent implements OnInit {
 
           if (this.posiciones.length > 0){
             this.zoom = 13;
-            var midPoint = this.posiciones[Math.round(this.posiciones.length / 2)];
+            var halfIndex = Math.round(this.posiciones.length / 2);
+            if (halfIndex == 1) halfIndex = 0;
+            var midPoint = this.posiciones[halfIndex];
+            
             console.log(this.posiciones);
             this.cameraLatitude = midPoint.latitud;
             this.cameraLongitude = midPoint.longitud;
+
+            //Se reducen la cantidad de posiciones por un tema de performance.
             if (this.posiciones.length >= 20000)
               this.posiciones = this.posiciones.filter( (_,i) => i % 10 == 0);
             else if (this.posiciones.length >= 10000)
               this.posiciones = this.posiciones.filter( (_,i) => i % 8 == 0);
             else if (this.posiciones.length >= 5000)
               this.posiciones = this.posiciones.filter( (_,i) => i % 6 == 0);
+            else if (this.posiciones.length >= 3500)
+              this.posiciones = this.posiciones.filter( (_,i) => i % 4 == 0);
+            else if (this.posiciones.length >= 2000)
+              this.posiciones = this.posiciones.filter( (_,i) => i % 2 == 0);
             console.log(this.posiciones);
           }
           this.hideModal();
