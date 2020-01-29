@@ -98,6 +98,15 @@ export class ServiceComponent implements OnInit {
   showOk = false;
   showError = false;
   showInfo = false;
+  isFilterOn = false;
+
+  //Filtros
+  filtroLimp = false;
+  filtroLimp4 = false;
+  filtroLimp9 = false;
+  filtroLimp16 = false;
+  filtroElegido = 'T';
+  pedidosSinFiltrar = [];
 
   intentos = 0;
   url_transit = "./assets/ic_transit_active.png";
@@ -146,8 +155,10 @@ export class ServiceComponent implements OnInit {
 
     this.roadshowService.getPedidosSETE().subscribe(res => {
       var i = 0;
-      if(res)
+      if(res){
         this.pedidos = res;
+        this.pedidosSinFiltrar = res;
+      }
 
       this.determinarPedidoSolapado(res);
       this.cdr.detectChanges();
@@ -251,6 +262,7 @@ export class ServiceComponent implements OnInit {
     }
   }
 
+  //Método recursivo para recalcular todos los tiempos de llegada y salida de los pedidos en ruta.
   recalcularTiempos(pedidos, i){
     console.log("Procesando pedido: " + i);
     if(i == pedidos.length)
@@ -396,6 +408,8 @@ export class ServiceComponent implements OnInit {
       //Calculo de distancia
       this.agregarPedido(pedido);
     }
+
+    this.cdr.detectChanges();
   }
 
   agregarPrimero(pedido){
@@ -792,6 +806,41 @@ export class ServiceComponent implements OnInit {
   }
 
   onClickAceptarModal(){
+    if(this.isFilterOn){
+      this.pedidos = this.pedidosSinFiltrar;
+      this.pedidos = this.pedidos.filter(p => p.items[0].tipo_service == this.filtroElegido);
+
+      if (this.filtroElegido == 'L'){
+        var pedidos, pedidos4, pedidos9, pedidos16;
+        pedidos = this.pedidos.filter(p => p.items[0].cantidad < 4);
+        pedidos4 = this.pedidos.filter(p => p.items[0].cantidad >= 4 && p.items[0].cantidad < 9);
+        pedidos9 = this.pedidos.filter(p => p.items[0].cantidad >= 9 && p.items[0].cantidad < 16);
+        pedidos16 = this.pedidos.filter(p => p.items[0].cantidad >= 16);
+
+        console.log("pedidos: ", pedidos);
+        console.log("pedidos: 4", pedidos4);
+        console.log("pedidos: 9", pedidos9);
+        console.log("pedidos: 16", pedidos16);
+        this.pedidos = [];
+
+        if (this.filtroLimp) this.pedidos = this.pedidos.concat(pedidos);
+        if (this.filtroLimp4) this.pedidos = this.pedidos.concat(pedidos4);
+        if (this.filtroLimp9) this.pedidos = this.pedidos.concat(pedidos9);
+        if (this.filtroLimp16) this.pedidos = this.pedidos.concat(pedidos16);
+      }
+
+      if(this.filtroElegido == 'T'){
+        this.isFilterOn = false;
+
+        setTimeout(() => {
+          this.pedidos = this.pedidosSinFiltrar;
+          this.cdr.detectChanges();
+        }, 400);
+      }
+
+      return;
+    }
+
     console.log(this.pedidosEnRuta);
     for(var i in this.pedidosEnRuta){
       this.pedidosEnRuta[i].en_ruta = false;
@@ -811,10 +860,12 @@ export class ServiceComponent implements OnInit {
   }
 
   onClickCancelarModal(){
-    this.empleadoSeleccionado = this.anteriorEmpleado;
+    if (this.isFilterOn)
+      this.isFilterOn = this.filtroElegido != 'T';
+    /*this.empleadoSeleccionado = this.anteriorEmpleado;
     console.log("Cerrar");
     console.log("Anterior: " + this.anteriorEmpleado);
-    console.log("Actual: " + this.empleadoSeleccionado);
+    console.log("Actual: " + this.empleadoSeleccionado);*/
   }
 
   onChangeFecha(){
@@ -926,6 +977,7 @@ export class ServiceComponent implements OnInit {
     var pedidosFinal = [];
     pedidosFinal = this.pedidosEnRuta.reverse();
     pedidosFinal = pedidosFinal.filter(pp => !pp.esAlmuerzo);
+
     this.cargandoRutas = true;
     this.resetRuta();
     this.cdr.detectChanges();
@@ -984,6 +1036,22 @@ export class ServiceComponent implements OnInit {
     this.distanciaRecorrida = 0;
     this.almuerzoAsignado = false;
     this.tiempoRuta = "09:00";
+  }
+
+  onClickFiltrar(){
+    this.isFilterOn = true;
+    this.showModal("Filtrar", "", true, true, false, false, "No");
+  }
+
+  onClickFiltro(opcion){
+    if (opcion != 'L') {
+      this.filtroLimp = false;
+      this.filtroLimp4 = false;
+      this.filtroLimp9 = false;
+      this.filtroLimp16 = false;
+    }
+
+    this.filtroElegido = opcion;
   }
 
   onClickEspecial(pedido){

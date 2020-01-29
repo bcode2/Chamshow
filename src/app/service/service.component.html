@@ -159,7 +159,7 @@
             <!-- Datepicker -->
             <div class="m-3 form-group">
               <div class="input-group">
-                <input class="form-control" style="font-size: 14px;" placeholder="dd-mm-yyyy" (dateSelect)="onChangeFecha()"
+                <input class="form-control" style="font-size: 16px;" placeholder="dd-mm-yyyy" (dateSelect)="onChangeFecha()"
                        name="dp" [(ngModel)]="fecha" ngbDatepicker [dayTemplate]="customDay" [markDisabled]="isDisabled" #d="ngbDatepicker">
                 <div class="input-group-append">
                   <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button">
@@ -278,9 +278,14 @@
     </div>
 
     <!-- Buscador clientes -->
-    <div class="offset-5 col-4" style="height: 100%;">
+    <div class="offset-4 col-5" style="height: 100%;">
       <div class="row" style="float: right;">
-        <button (click)="onClickVerRutas()" type="button" style="height: 38px;" class="shadow mt-2" [ngClass]="rutasMode ? 'btn btn-primary' : 'btn btn-light'">Ver rutas</button>
+        <button (click)="onClickFiltrar()" type="button" style="height: 38px;" class="shadow mt-2" [ngClass]="isFilterOn ? 'btn btn-primary' : 'btn btn-light'">
+          <img src="./assets/ic_filtro.png" height="28px" width="28px">
+          <span>Filtrar</span>
+        </button>
+
+        <button (click)="onClickVerRutas()" type="button" style="height: 38px;" class="shadow mt-2 ml-2" [ngClass]="rutasMode ? 'btn btn-primary' : 'btn btn-light'">Ver rutas</button>
 
         <div class="form-inline m-2" style="float: right;">
           <input #box (keyup.enter)="onEnterCodigo(box.value)" class="form-control shadow mr-sm-2" type="search" placeholder="Ingresar código" aria-label="Search">
@@ -325,7 +330,7 @@
           <h5 class="modal-title" id="exampleModalLongTitle">{{modalTitle}}</h5>
         </div>
         <div class="modal-body">
-          <div class="row">
+          <div class="row" *ngIf="!isFilterOn">
             <div class="col-2">
               <div [hidden]="!showModalLoading" class="lds-ellipsis" style="margin-bottom: 20px;"><div></div><div></div><div></div><div></div></div>
               <img *ngIf="showOk" class="ml-2" @fadeInOut width="50px" height="50px" src="./assets/ic_ok.png">
@@ -334,6 +339,48 @@
             </div>
             <div class="col-9">
               <p [innerHTML]="modalText" class="align-middle ml-2"></p>
+            </div>
+          </div>
+          <div class="row" *ngIf="isFilterOn">
+            <div class="col-12">
+              <div class="custom-control custom-radio">
+                <input (click)="onClickFiltro('T')" [checked]="filtroElegido == 'T'" type="radio" id="customRadio5" name="customRadio" class="custom-control-input">
+                <label class="custom-control-label" for="customRadio5">Todos</label>
+              </div>
+              <div class="custom-control custom-radio">
+                <input (click)="onClickFiltro('L')" [checked]="filtroElegido == 'L'" type="radio" id="customRadio1" name="customRadio" class="custom-control-input">
+                <label class="custom-control-label" for="customRadio1">Limpiezas</label>
+              </div>
+              <div class="ml-4">
+                <div class="custom-control custom-checkbox custom-control-inline">
+                  <input [disabled]="filtroElegido != 'L'" [(ngModel)]="filtroLimp" type="checkbox" class="custom-control-input" id="customCheck1">
+                  <label class="custom-control-label" for="customCheck1">0 - 3</label>
+                </div>
+                <div class="custom-control custom-checkbox custom-control-inline">
+                  <input [disabled]="filtroElegido != 'L'" [(ngModel)]="filtroLimp4" type="checkbox" class="custom-control-input" id="customCheck2">
+                  <label class="custom-control-label" for="customCheck2">4 - 8</label>
+                </div>
+                <div class="custom-control custom-checkbox custom-control-inline">
+                  <input [disabled]="filtroElegido != 'L'" [(ngModel)]="filtroLimp9" type="checkbox" class="custom-control-input" id="customCheck3">
+                  <label class="custom-control-label" for="customCheck3">9 - 15</label>
+                </div>
+                <div class="custom-control custom-checkbox custom-control-inline">
+                  <input [disabled]="filtroElegido != 'L'" [(ngModel)]="filtroLimp16" type="checkbox" class="custom-control-input" id="customCheck4">
+                  <label class="custom-control-label" for="customCheck4">Mayor a 16</label>
+                </div>
+              </div>
+              <div class="custom-control custom-radio">
+                <input (click)="onClickFiltro('R')" [checked]="filtroElegido == 'R'" type="radio" id="customRadio2" name="customRadio" class="custom-control-input">
+                <label class="custom-control-label" for="customRadio2">Reparaciones</label>
+              </div>
+              <div class="custom-control custom-radio">
+                <input (click)="onClickFiltro('I')" [checked]="filtroElegido == 'I'" type="radio" id="customRadio3" name="customRadio" class="custom-control-input">
+                <label class="custom-control-label"  for="customRadio3">Instalaciones</label>
+              </div>
+              <div class="custom-control custom-radio">
+                <input (click)="onClickFiltro('V')" [checked]="filtroElegido == 'V'" type="radio" id="customRadio4" name="customRadio" class="custom-control-input">
+                <label class="custom-control-label" for="customRadio4">Verificaciones</label>
+              </div>
             </div>
           </div>
         </div>
