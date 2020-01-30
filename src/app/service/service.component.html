@@ -345,11 +345,13 @@
             <div class="col-12">
               <div class="custom-control custom-radio">
                 <input (click)="onClickFiltro('T')" [checked]="filtroElegido == 'T'" type="radio" id="customRadio5" name="customRadio" class="custom-control-input">
-                <label class="custom-control-label" for="customRadio5">Todos</label>
+                <label class="custom-control-label" for="customRadio5">Todos <b>({{pedidosSinFiltrar.length}})</b></label>
               </div>
+              <hr>
               <div class="custom-control custom-radio">
                 <input (click)="onClickFiltro('L')" [checked]="filtroElegido == 'L'" type="radio" id="customRadio1" name="customRadio" class="custom-control-input">
-                <label class="custom-control-label" for="customRadio1">Limpiezas</label>
+                <label class="custom-control-label" for="customRadio1">Limpiezas <b>({{filtroCantLimp}})</b></label>
+                <p class="badge badge-pill badge-primary ml-2" style="font-size: 13px;">{{filtroEqLimp}}</p>
               </div>
               <div class="ml-4">
                 <div class="custom-control custom-checkbox custom-control-inline">
@@ -369,17 +371,20 @@
                   <label class="custom-control-label" for="customCheck4">Mayor a 16</label>
                 </div>
               </div>
-              <div class="custom-control custom-radio">
+              <div class="custom-control custom-radio mt-3">
                 <input (click)="onClickFiltro('R')" [checked]="filtroElegido == 'R'" type="radio" id="customRadio2" name="customRadio" class="custom-control-input">
-                <label class="custom-control-label" for="customRadio2">Reparaciones</label>
+                <label class="custom-control-label" for="customRadio2">Reparaciones <b>({{filtroCantRepa}})</b></label>
+                <p class="badge badge-pill badge-primary ml-2" style="font-size: 13px;">{{filtroEqRepa}}</p>
               </div>
               <div class="custom-control custom-radio">
                 <input (click)="onClickFiltro('I')" [checked]="filtroElegido == 'I'" type="radio" id="customRadio3" name="customRadio" class="custom-control-input">
-                <label class="custom-control-label"  for="customRadio3">Instalaciones</label>
+                <label class="custom-control-label"  for="customRadio3">Instalaciones <b>({{filtroCantInst}})</b></label>
+                <p class="badge badge-pill badge-primary ml-2" style="font-size: 13px;">{{filtroEqInst}}</p>
               </div>
               <div class="custom-control custom-radio">
                 <input (click)="onClickFiltro('V')" [checked]="filtroElegido == 'V'" type="radio" id="customRadio4" name="customRadio" class="custom-control-input">
-                <label class="custom-control-label" for="customRadio4">Verificaciones</label>
+                <label class="custom-control-label" for="customRadio4">Verificaciones <b>({{filtroCantVeri}})</b></label>
+                <p class="badge badge-pill badge-primary ml-2" style="font-size: 13px;">{{filtroEqVeri}}</p>
               </div>
             </div>
           </div>

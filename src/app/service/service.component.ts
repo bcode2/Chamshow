@@ -106,6 +106,15 @@ export class ServiceComponent implements OnInit {
   filtroLimp9 = false;
   filtroLimp16 = false;
   filtroElegido = 'T';
+  filtroCantLimp = 0;
+  filtroCantRepa = 0;
+  filtroCantInst = 0;
+  filtroCantVeri = 0;
+  filtroEqTot = 0;
+  filtroEqLimp = 0;
+  filtroEqRepa = 0;
+  filtroEqInst = 0;
+  filtroEqVeri = 0;
   pedidosSinFiltrar = [];
 
   intentos = 0;
@@ -176,6 +185,7 @@ export class ServiceComponent implements OnInit {
 
             setTimeout(() => {
               this.getTotalRutasSETE();
+              this.calcularCantidades();
             }, 500);
           }
         });
@@ -184,7 +194,34 @@ export class ServiceComponent implements OnInit {
     });
   }
 
-
+  calcularCantidades(){
+    this.filtroCantLimp = 0;
+    this.filtroCantRepa = 0;
+    this.filtroCantInst = 0;
+    this.filtroCantVeri = 0;
+    this.filtroEqLimp = 0;
+    this.filtroEqRepa = 0;
+    this.filtroEqInst = 0;
+    this.filtroEqVeri = 0;
+    this.pedidos.forEach(pedido => {
+      if (pedido.items[0].tipo_service == 'L') {
+        this.filtroCantLimp++;
+        this.filtroEqLimp += pedido.items[0].cantidad;
+      }
+      if (pedido.items[0].tipo_service == 'R') {
+        this.filtroCantRepa++;
+        this.filtroEqRepa += pedido.items[0].cantidad;
+      }
+      if (pedido.items[0].tipo_service == 'I') {
+        this.filtroCantInst++;
+        this.filtroEqInst += pedido.items[0].cantidad;
+      }
+      if (pedido.items[0].tipo_service == 'V') {
+        this.filtroCantVeri++;
+        this.filtroEqVeri += pedido.items[0].cantidad;
+      }
+    });
+  }
 
   getTotalRutasSETE(){
     this.empleadosPP = [];
