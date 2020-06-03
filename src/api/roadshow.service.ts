@@ -25,6 +25,7 @@ export class RoadshowService {
     getTrackingGPS:         url_roadshow_api  + 'Get_Tracking_Gps',
     postCoordenadasCliente: url_roadshow_api  + 'Post_Coordenadas_Cliente',
     postPedidoEspecial:     url_roadshow_api  + 'Post_Pedido_Especial',
+    postPedidoUrgente:      url_roadshow_api  + 'Post_Pedido_Urgente',
     postRoadshowRuteo:      url_roadshow_api  + 'Post_Roadshow_Ruteo'
   }
 
@@ -148,6 +149,25 @@ export class RoadshowService {
 
   public marcarPedidoEspecial(pedido, habilitado) : any {
     var endpoint = this.API.postPedidoEspecial;
+
+    var json = {
+      "prefijo": pedido.prefijo,
+      "numero": pedido.numero,
+      "habilitado": habilitado
+    }
+
+    const httpHeaders = {
+      headers: new HttpHeaders({
+        'Content-Type':  'application/x-www-form-urlencoded'
+      })
+    };
+
+    console.log(endpoint);
+    return this.http.post(endpoint, json, httpHeaders);
+  }
+
+  public marcarPedidoUrgente(pedido, habilitado) : any {
+    var endpoint = this.API.postPedidoUrgente;
 
     var json = {
       "prefijo": pedido.prefijo,

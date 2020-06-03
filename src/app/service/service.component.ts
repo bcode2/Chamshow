@@ -181,8 +181,6 @@ export class ServiceComponent implements OnInit {
             this.empleadoSeleccionado = 0;
             this.anteriorEmpleado = 0;
 
-            this.onClickCambioModo(this.empleados[0].caminante ? 'transit' : 'driving');
-
             setTimeout(() => {
               this.getTotalRutasSETE();
               this.calcularCantidades();
@@ -191,6 +189,16 @@ export class ServiceComponent implements OnInit {
         });
 
       }, 1000);
+    },
+    error => {
+      this.cargandoRutas = false;
+      this.hideModal();
+      setTimeout(() => {
+        this.showModal("Pedidos de SETE", "Hubo un error al tratar de obtener los pedidos. Asegúrese de que " +
+                        "esté conectado a la red de Culligan.", false, false, true, false, 'ERROR');
+        this.cdr.detectChanges();
+        console.log(error);
+      }, 500);
     });
   }
 
@@ -425,6 +433,7 @@ export class ServiceComponent implements OnInit {
       }
     }
 
+    console.log(pedido);
     console.log(this.pedidosSolapadosCli);
 
     this.pedidosSolapadosCli.splice(this.pedidosSolapadosCli.indexOf(pedido), 1);
@@ -929,6 +938,9 @@ export class ServiceComponent implements OnInit {
   }
 
   mostrarRutaTecnico(res, empleado){
+    //Cambia el modo segun tecnico
+    this.onClickCambioModo(empleado.caminante ? 'transit' : 'driving');
+
     this.pedidosEnRuta = res;
     this.pedidos = this.pedidos.concat(res);
     for(var i in this.pedidosEnRuta) {
@@ -1089,6 +1101,28 @@ export class ServiceComponent implements OnInit {
     }
 
     this.filtroElegido = opcion;
+  }
+
+  onClickUrgente(pedido) {
+    this.cargandoDistancia = true;
+    this.roadshowService.marcarPedidoUrgente(pedido, pedido.urgente ? 0 : 1).subscribe(res => {
+      if (!pedido.urgente){
+        pedido.icon = "./assets/ic_urg.png";
+        pedido.elevation = 4;
+      }
+      else{
+        pedido.icon = this.getIcon(pedido.items);
+        pedido.elevation = 1;
+      }
+      pedido.urgente = !pedido.urgente;
+      this.cargandoDistancia = false;
+      this.cdr.detectChanges();
+    },
+    error => {
+      console.log(error);
+      this.cargandoDistancia = false;
+      this.cdr.detectChanges();
+    });
   }
 
   onClickEspecial(pedido){

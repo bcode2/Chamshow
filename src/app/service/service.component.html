@@ -46,9 +46,17 @@
           </div>
 
           <div style="float: right;">
-            <img src="./assets/ic_star_s.png" style="display: inline-block" width="15px" height="15px">
-            <span *ngIf="!pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn">Marcar como especial</span>
-            <span *ngIf="pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn-red">Desmarcar</span>
+            <div *ngIf="!pedido.urgente" style="display: inline-block">
+              <img src="./assets/ic_star_s.png" style="display: inline-block" width="15px" height="15px">
+              <span *ngIf="!pedido.especial" (click)="onClickEspecial(pedido)" class="ml-1 link-btn">Especial</span>
+              <span *ngIf="pedido.especial" (click)="onClickEspecial(pedido)" class="ml-1 link-btn-red">Desmarcar</span>
+            </div>
+
+            <div *ngIf="!pedido.especial" style="display: inline-block">
+              <img class="ml-3" src="./assets/ic_urg_s.png" style="display: inline-block" width="15px" height="15px">
+              <span *ngIf="!pedido.urgente" (click)="onClickUrgente(pedido)" class="ml-1 link-btn">Urgente</span>
+              <span *ngIf="pedido.urgente" (click)="onClickUrgente(pedido)" class="ml-1 link-btn-red">Desmarcar</span>
+            </div>
           </div>
 
           <!-- Pedido solapado -->
@@ -84,9 +92,17 @@
               </div>
 
               <div style="float: right;">
-                <img src="./assets/ic_star_s.png" style="display: inline-block" width="15px" height="15px">
-                <span *ngIf="!pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn">Marcar como especial</span>
-                <span *ngIf="pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn-red">Desmarcar</span>
+                <div *ngIf="!pedido.urgente" style="display: inline-block">
+                  <img src="./assets/ic_star_s.png" style="display: inline-block" width="15px" height="15px">
+                  <span *ngIf="!pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn">Especial</span>
+                  <span *ngIf="pedido.especial" (click)="onClickEspecial(pedido)" class="ml-2 link-btn-red">Desmarcar</span>
+                </div>
+
+                <div *ngIf="!pedido.especial" style="display: inline-block">
+                  <img class="ml-3" src="./assets/ic_urg_s.png" style="display: inline-block" width="15px" height="15px">
+                  <span *ngIf="!pedido.urgente" (click)="onClickUrgente(pedido)" class="ml-1 link-btn">Urgente</span>
+                  <span *ngIf="pedido.urgente" (click)="onClickUrgente(pedido)" class="ml-1 link-btn-red">Desmarcar</span>
+                </div>
               </div>
             </div>
           </div>
